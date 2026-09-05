@@ -53,6 +53,22 @@
         }
         .btn-secondary:hover { background: #E5E7EB; }
 
+        .btn-danger {
+            background: #EF4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-danger:hover { background: #DC2626; }
+        .btn-danger:active { transform: scale(0.97); }
+
         .btn-success {
             background: #2B8C7A;
             color: white;
@@ -858,6 +874,58 @@
         return result;
     }
 
+    // Простая модалка подтверждения (без полей)
+    function confirmModal(title, subtitle) {
+        return new Promise((resolve) => {
+            const overlay = document.getElementById('modalOverlay');
+            const titleEl = document.getElementById('modalTitle');
+            const subEl = document.getElementById('modalSub');
+            const fields = document.getElementById('modalFields');
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            const cancelBtn = document.getElementById('modalCancelBtn');
+            const closeBtn = document.getElementById('modalCloseBtn');
+
+            titleEl.textContent = title || 'Подтверждение';
+            subEl.textContent = subtitle || 'Вы уверены?';
+            fields.innerHTML = '';
+
+            // Меняем текст кнопок
+            confirmBtn.textContent = 'Удалить';
+            confirmBtn.className = 'btn-danger';
+
+            modalResolve = null;
+
+            const cleanup = () => {
+                overlay.classList.add('hidden');
+                confirmBtn.textContent = 'Сохранить';
+                confirmBtn.className = 'btn-primary';
+            };
+
+            const onConfirm = () => {
+                cleanup();
+                if (modalResolve) modalResolve(true);
+                modalResolve = null;
+            };
+
+            const onCancel = () => {
+                cleanup();
+                if (modalResolve) modalResolve(false);
+                modalResolve = null;
+            };
+
+            confirmBtn.onclick = onConfirm;
+            cancelBtn.onclick = onCancel;
+            closeBtn.onclick = onCancel;
+
+            overlay.onclick = (e) => {
+                if (e.target === overlay) onCancel();
+            };
+
+            overlay.classList.remove('hidden');
+            modalResolve = resolve;
+        });
+    }
+
     // ============================================================
     //  НАВИГАЦИЯ
     // ============================================================
@@ -904,7 +972,6 @@
         // Клик по всей карточке колоды → открыть
         document.querySelectorAll('.deck-item').forEach(el => {
             el.addEventListener('click', function(e) {
-                // Если кликнули по кнопке — игнорируем
                 if (e.target.closest('.deck-start-btn') || e.target.closest('.delete-deck-btn') || e.target.closest('.edit-deck-btn')) return;
                 const id = parseInt(this.dataset.deckId);
                 openDeck(id);
@@ -928,17 +995,15 @@
                 const deck = getDeck(id);
                 if (!deck) return;
 
-                const result = await promptModal(
+                const confirmed = await confirmModal(
                     'Удалить колоду?',
-                    `Вы уверены, что хотите удалить "${deck.name}"? Все карточки будут потеряны. Введите "да" для подтверждения.`,
-                    [{ id: 'confirm', label: 'Введите "да"', type: 'text', placeholder: 'да', required: true, autofocus: true }]
+                    `Вы уверены, что хотите удалить "${deck.name}"? Все карточки будут потеряны.`
                 );
 
-                if (result && result.confirm.trim().toLowerCase() === 'да') {
+                if (confirmed) {
                     decks = decks.filter(d => d.id !== id);
                     saveData();
                     renderDecks();
-                    // Если мы были внутри этой колоды — выходим на главную
                     if (currentDeckId === id) {
                         currentDeckId = null;
                         showScreen('screen-decks');
@@ -965,7 +1030,6 @@
                     deck.name = result.name.trim();
                     saveData();
                     renderDecks();
-                    // Если мы внутри этой колоды — обновляем заголовок
                     if (currentDeckId === id) {
                         document.getElementById('currentDeckName').textContent = deck.name;
                     }
@@ -985,21 +1049,13 @@
         }
 
         currentDeckId = id;
-
-        // Обновляем заголовок
         document.getElementById('currentDeckName').textContent = deck.name;
-
-        // Обновляем количество карт
         document.getElementById('cardCount').textContent = `${deck.cards.length} карт${deck.cards.length % 10 === 1 && deck.cards.length % 100 !== 11 ? 'а' : ''}`;
 
-        // Обновляем статистику
         const studied = deck.cards.filter(c => c.studied).length;
         document.getElementById('deckStats').textContent = `Изучено: ${studied} из ${deck.cards.length}`;
 
-        // Рендерим карточки
         renderCards(deck);
-
-        // Показываем экран
         showScreen('screen-deck');
     }
 
@@ -1021,19 +1077,17 @@
             </div>
         `).join('');
 
-        // Удаление карточки
         document.querySelectorAll('.delete-card').forEach(btn => {
             btn.addEventListener('click', async function(e) {
                 e.stopPropagation();
                 const cardId = parseInt(this.dataset.cardId);
 
-                const result = await promptModal(
+                const confirmed = await confirmModal(
                     'Удалить карточку?',
-                    'Это действие нельзя отменить. Введите "да" для подтверждения.',
-                    [{ id: 'confirm', label: 'Введите "да"', type: 'text', placeholder: 'да', required: true, autofocus: true }]
+                    'Это действие нельзя отменить.'
                 );
 
-                if (result && result.confirm.trim().toLowerCase() === 'да') {
+                if (confirmed) {
                     const deck = getDeck(currentDeckId);
                     deck.cards = deck.cards.filter(c => c.id !== cardId);
                     saveData();
@@ -1042,7 +1096,6 @@
             });
         });
 
-        // Редактирование карточки
         document.querySelectorAll('.edit-card').forEach(btn => {
             btn.addEventListener('click', async function(e) {
                 e.stopPropagation();
@@ -1232,7 +1285,6 @@
     document.addEventListener('DOMContentLoaded', () => {
         loadData();
 
-        // Приветствие
         const h = new Date().getHours();
         let g = 'Доброй ночи';
         if (h >= 5 && h < 12) g = 'Доброе утро';
@@ -1242,7 +1294,6 @@
 
         renderDecks();
 
-        // Создание колоды
         document.getElementById('createDeckBtn').addEventListener('click', async () => {
             const result = await promptModal(
                 'Новая колода',
@@ -1259,20 +1310,16 @@
                 decks.push(newDeck);
                 saveData();
                 renderDecks();
-
-                // Автоматически открываем новую колоду
                 openDeck(newDeck.id);
             }
         });
 
-        // Назад к колодам
         document.getElementById('backToDecks').addEventListener('click', () => {
             currentDeckId = null;
             showScreen('screen-decks');
             renderDecks();
         });
 
-        // Назад из теста
         document.getElementById('backToDeckFromTest').addEventListener('click', () => {
             if (currentTest) {
                 const deck = getDeck(currentTest.deckId);
@@ -1285,21 +1332,17 @@
             }
         });
 
-        // Добавить карточку
         document.getElementById('addCardBtn').addEventListener('click', addCard);
 
-        // Начать тест
         document.getElementById('startTestBtn').addEventListener('click', () => {
             if (currentDeckId) startTest(currentDeckId);
         });
 
-        // Кнопки теста
         document.getElementById('knowWithoutSeeBtn').addEventListener('click', handleKnowWithoutSee);
         document.getElementById('showAnswerBtn').addEventListener('click', showAnswer);
         document.getElementById('knowBtn').addEventListener('click', handleKnow);
         document.getElementById('retryBtn').addEventListener('click', handleRetry);
 
-        // Результаты
         document.getElementById('retestBtn').addEventListener('click', () => {
             if (currentTest) startTest(currentTest.deckId);
         });
