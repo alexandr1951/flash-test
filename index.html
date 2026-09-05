@@ -22,7 +22,6 @@
         .app { max-width: 600px; width: 100%; }
         .hidden { display: none !important; }
 
-        /* ===== КНОПКИ ===== */
         .btn-primary {
             background: #2B8C7A;
             color: white;
@@ -140,7 +139,6 @@
         }
         .btn-close-modal:hover { color: #1A1A1A; }
 
-        /* ===== ШАПКА ===== */
         .header {
             display: flex;
             justify-content: space-between;
@@ -190,7 +188,6 @@
             flex-shrink: 0;
         }
 
-        /* ===== ЭКРАН 1: КОЛОДЫ ===== */
         #screen-decks .sub-header {
             display: flex;
             justify-content: space-between;
@@ -222,6 +219,7 @@
             cursor: pointer;
             transition: border-color 0.2s, box-shadow 0.2s;
             gap: 8px;
+            flex-wrap: wrap;
         }
         .deck-item:hover { border-color: #2B8C7A; box-shadow: 0 2px 8px rgba(43,140,122,0.08); }
         .deck-item:active { transform: scale(0.99); }
@@ -287,18 +285,6 @@
         .deck-start-btn:hover { background: #237A69; }
         .deck-start-btn:active { transform: scale(0.95); }
 
-        .deck-delete-btn {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            opacity: 0.4;
-            transition: opacity 0.2s, transform 0.1s;
-            padding: 4px 6px;
-        }
-        .deck-delete-btn:hover { opacity: 1; }
-        .deck-delete-btn:active { transform: scale(0.9); }
-
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -311,7 +297,6 @@
         .empty-state h3 { color: #1A1A1A; font-weight: 600; font-size: 18px; margin-bottom: 6px; }
         .empty-state p { color: #6B7280; font-size: 14px; }
 
-        /* ===== ЭКРАН 2: ВНУТРИ КОЛОДЫ ===== */
         #screen-deck { display: none; }
         #screen-deck .deck-header {
             display: flex;
@@ -367,7 +352,6 @@
         .card-item .actions button:active { transform: scale(0.9); }
         .deck-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
 
-        /* ===== ЭКРАН 3: ТЕСТ ===== */
         #screen-test { display: none; }
         .test-progress {
             display: flex;
@@ -429,7 +413,6 @@
         .test-actions .action-row .btn-secondary { flex: 1; }
         .test-actions .action-row .btn-success { flex: 1; }
 
-        /* ===== ЭКРАН 4: РЕЗУЛЬТАТ ===== */
         #screen-result {
             display: none;
             text-align: center;
@@ -455,7 +438,6 @@
         .stat-card.highlight { border-color: #2B8C7A; background: #F8FBF9; }
         #screen-result .result-actions { display: flex; flex-direction: column; gap: 10px; }
 
-        /* ===== FAB ===== */
         .fab {
             position: fixed;
             bottom: 28px;
@@ -482,7 +464,6 @@
             .fab { bottom: 36px; right: calc(50% - 300px + 16px); }
         }
 
-        /* ===== КАСТОМНАЯ МОДАЛКА ===== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -566,7 +547,6 @@
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* ===== АНИМАЦИЯ ===== */
         .deck-item {
             opacity: 0;
             animation: fadeUp 0.4s forwards;
@@ -579,21 +559,14 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ===== АДАПТИВ ===== */
         @media (max-width: 420px) {
             .card-face .content { font-size: 18px; }
             .card-flip { height: 280px; }
             .card-face { padding: 24px 16px; }
             #screen-result .result-stats { grid-template-columns: 1fr 1fr; }
             .modal-box { padding: 24px 16px; }
-            .deck-item {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            .deck-actions-buttons {
-                width: 100%;
-                justify-content: flex-end;
-            }
+            .deck-item { flex-wrap: wrap; gap: 8px; }
+            .deck-actions-buttons { width: 100%; justify-content: flex-end; }
         }
     </style>
 </head>
@@ -719,7 +692,7 @@
         </div>
     </div>
 
-    <!-- ===== КАСТОМНАЯ МОДАЛКА ===== -->
+    <!-- МОДАЛКА -->
     <div class="modal-overlay hidden" id="modalOverlay">
         <div class="modal-box">
             <button class="btn-close-modal" id="modalCloseBtn">✕</button>
@@ -769,7 +742,7 @@
     function generateId() { return Date.now() + Math.random() * 1000; }
 
     // ============================================================
-    //  КАСТОМНАЯ МОДАЛКА
+    //  МОДАЛКА
     // ============================================================
     function showModal(config) {
         return new Promise((resolve) => {
@@ -895,15 +868,18 @@
     }
 
     // ============================================================
-    //  ЭКРАН 1
+    //  ЭКРАН 1: КОЛОДЫ
     // ============================================================
     function renderDecks() {
         const list = document.getElementById('deckList');
-        document.getElementById('deckCount').textContent = `${decks.length} колод${decks.length % 10 === 1 && decks.length % 100 !== 11 ? 'а' : ''}`;
+        const count = document.getElementById('deckCount');
+        count.textContent = `${decks.length} колод${decks.length % 10 === 1 && decks.length % 100 !== 11 ? 'а' : ''}`;
+
         if (decks.length === 0) {
             list.innerHTML = `<div class="empty-state"><span class="icon">📭</span><h3>Здесь пока пусто</h3><p>Создайте свою первую колоду</p></div>`;
             return;
         }
+
         list.innerHTML = decks.map(d => `
             <div class="deck-item" data-deck-id="${d.id}">
                 <div class="deck-left">
@@ -925,83 +901,116 @@
             </div>
         `).join('');
 
-        // Открыть колоду (клик по карточке)
+        // Клик по всей карточке колоды → открыть
         document.querySelectorAll('.deck-item').forEach(el => {
-            el.addEventListener('click', e => {
+            el.addEventListener('click', function(e) {
+                // Если кликнули по кнопке — игнорируем
                 if (e.target.closest('.deck-start-btn') || e.target.closest('.delete-deck-btn') || e.target.closest('.edit-deck-btn')) return;
-                openDeck(parseInt(el.dataset.deckId));
+                const id = parseInt(this.dataset.deckId);
+                openDeck(id);
             });
         });
 
         // Кнопка "Начать"
         document.querySelectorAll('.deck-start-btn').forEach(btn => {
-            btn.addEventListener('click', e => {
+            btn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                openDeck(parseInt(btn.dataset.deckId));
+                const id = parseInt(this.dataset.deckId);
+                openDeck(id);
             });
         });
 
-        // Удалить колоду
+        // Удаление колоды
         document.querySelectorAll('.delete-deck-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', async function(e) {
                 e.stopPropagation();
-                const deckId = parseInt(btn.dataset.deckId);
-                const deck = getDeck(deckId);
+                const id = parseInt(this.dataset.deckId);
+                const deck = getDeck(id);
                 if (!deck) return;
+
                 const result = await promptModal(
                     'Удалить колоду?',
                     `Вы уверены, что хотите удалить "${deck.name}"? Все карточки будут потеряны. Введите "да" для подтверждения.`,
                     [{ id: 'confirm', label: 'Введите "да"', type: 'text', placeholder: 'да', required: true, autofocus: true }]
                 );
+
                 if (result && result.confirm.trim().toLowerCase() === 'да') {
-                    decks = decks.filter(d => d.id !== deckId);
+                    decks = decks.filter(d => d.id !== id);
                     saveData();
                     renderDecks();
+                    // Если мы были внутри этой колоды — выходим на главную
+                    if (currentDeckId === id) {
+                        currentDeckId = null;
+                        showScreen('screen-decks');
+                    }
                 }
             });
         });
 
-        // Редактировать название колоды
+        // Редактирование названия колоды
         document.querySelectorAll('.edit-deck-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', async function(e) {
                 e.stopPropagation();
-                const deckId = parseInt(btn.dataset.deckId);
-                const deck = getDeck(deckId);
+                const id = parseInt(this.dataset.deckId);
+                const deck = getDeck(id);
                 if (!deck) return;
+
                 const result = await promptModal(
                     'Редактировать колоду',
                     'Измените название',
                     [{ id: 'name', label: 'Название колоды', type: 'text', value: deck.name, required: true, autofocus: true }]
                 );
+
                 if (result && result.name.trim()) {
                     deck.name = result.name.trim();
                     saveData();
                     renderDecks();
+                    // Если мы внутри этой колоды — обновляем заголовок
+                    if (currentDeckId === id) {
+                        document.getElementById('currentDeckName').textContent = deck.name;
+                    }
                 }
             });
         });
     }
 
     // ============================================================
-    //  ЭКРАН 2
+    //  ЭКРАН 2: ВНУТРИ КОЛОДЫ
     // ============================================================
     function openDeck(id) {
-        currentDeckId = id;
         const deck = getDeck(id);
-        if (!deck) return;
+        if (!deck) {
+            alert('Колода не найдена!');
+            return;
+        }
+
+        currentDeckId = id;
+
+        // Обновляем заголовок
         document.getElementById('currentDeckName').textContent = deck.name;
+
+        // Обновляем количество карт
         document.getElementById('cardCount').textContent = `${deck.cards.length} карт${deck.cards.length % 10 === 1 && deck.cards.length % 100 !== 11 ? 'а' : ''}`;
-        document.getElementById('deckStats').textContent = `Изучено: ${deck.cards.filter(c => c.studied).length} из ${deck.cards.length}`;
+
+        // Обновляем статистику
+        const studied = deck.cards.filter(c => c.studied).length;
+        document.getElementById('deckStats').textContent = `Изучено: ${studied} из ${deck.cards.length}`;
+
+        // Рендерим карточки
         renderCards(deck);
+
+        // Показываем экран
         showScreen('screen-deck');
     }
 
     function renderCards(deck) {
         const list = document.getElementById('cardList');
+
         if (deck.cards.length === 0) {
             list.innerHTML = `<div style="text-align:center;padding:30px;color:#6B7280;">Нет карточек. Добавьте первую!</div>`;
             return;
         }
+
         list.innerHTML = deck.cards.map(c => `
             <div class="card-item" data-card-id="${c.id}">
                 <span class="question">${c.question}</span>
@@ -1012,32 +1021,46 @@
             </div>
         `).join('');
 
+        // Удаление карточки
         document.querySelectorAll('.delete-card').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', async function(e) {
                 e.stopPropagation();
-                const result = await promptModal('Удалить карточку?', 'Это действие нельзя отменить', [
-                    { id: 'confirm', label: 'Введите "да" для подтверждения', type: 'text', placeholder: 'да', required: true, autofocus: true }
-                ]);
+                const cardId = parseInt(this.dataset.cardId);
+
+                const result = await promptModal(
+                    'Удалить карточку?',
+                    'Это действие нельзя отменить. Введите "да" для подтверждения.',
+                    [{ id: 'confirm', label: 'Введите "да"', type: 'text', placeholder: 'да', required: true, autofocus: true }]
+                );
+
                 if (result && result.confirm.trim().toLowerCase() === 'да') {
                     const deck = getDeck(currentDeckId);
-                    deck.cards = deck.cards.filter(c => c.id !== parseInt(btn.dataset.cardId));
+                    deck.cards = deck.cards.filter(c => c.id !== cardId);
                     saveData();
                     openDeck(currentDeckId);
                 }
             });
         });
 
+        // Редактирование карточки
         document.querySelectorAll('.edit-card').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', async function(e) {
                 e.stopPropagation();
+                const cardId = parseInt(this.dataset.cardId);
                 const deck = getDeck(currentDeckId);
-                const card = deck.cards.find(c => c.id === parseInt(btn.dataset.cardId));
+                const card = deck.cards.find(c => c.id === cardId);
                 if (!card) return;
-                const result = await promptModal('Редактировать карточку', 'Измените данные', [
-                    { id: 'question', label: 'Вопрос', type: 'text', value: card.question, required: true, autofocus: true },
-                    { id: 'answer', label: 'Ответ', type: 'text', value: card.answer, required: true },
-                    { id: 'example', label: 'Пример использования', type: 'text', value: card.example || '' }
-                ]);
+
+                const result = await promptModal(
+                    'Редактировать карточку',
+                    'Измените данные',
+                    [
+                        { id: 'question', label: 'Вопрос', type: 'text', value: card.question, required: true, autofocus: true },
+                        { id: 'answer', label: 'Ответ', type: 'text', value: card.answer, required: true },
+                        { id: 'example', label: 'Пример использования', type: 'text', value: card.example || '' }
+                    ]
+                );
+
                 if (result) {
                     card.question = result.question.trim() || card.question;
                     card.answer = result.answer.trim() || card.answer;
@@ -1054,12 +1077,21 @@
     // ============================================================
     async function addCard() {
         const deck = getDeck(currentDeckId);
-        if (!deck) return;
-        const result = await promptModal('Новая карточка', 'Заполните поля', [
-            { id: 'question', label: 'Вопрос', type: 'text', placeholder: 'Например: Apple', required: true, autofocus: true },
-            { id: 'answer', label: 'Ответ', type: 'text', placeholder: 'Например: Яблоко', required: true },
-            { id: 'example', label: 'Пример использования (опционально)', type: 'textarea', placeholder: 'Например: I eat an apple', rows: 2 }
-        ]);
+        if (!deck) {
+            alert('Колода не найдена!');
+            return;
+        }
+
+        const result = await promptModal(
+            'Новая карточка',
+            'Заполните поля',
+            [
+                { id: 'question', label: 'Вопрос', type: 'text', placeholder: 'Например: Apple', required: true, autofocus: true },
+                { id: 'answer', label: 'Ответ', type: 'text', placeholder: 'Например: Яблоко', required: true },
+                { id: 'example', label: 'Пример использования (опционально)', type: 'textarea', placeholder: 'Например: I eat an apple', rows: 2 }
+            ]
+        );
+
         if (result) {
             deck.cards.push({
                 id: generateId(),
@@ -1077,7 +1109,12 @@
     // ============================================================
     function startTest(id) {
         const deck = getDeck(id);
-        if (!deck || deck.cards.length === 0) {
+        if (!deck) {
+            alert('Колода не найдена!');
+            return;
+        }
+
+        if (deck.cards.length === 0) {
             showModal({
                 title: 'Нет карточек',
                 subtitle: 'Добавьте хотя бы одну карточку в колоду',
@@ -1085,6 +1122,7 @@
             }).then(() => {});
             return;
         }
+
         const shuffled = [...deck.cards].sort(() => Math.random() - 0.5);
         currentTest = {
             deckId: id,
@@ -1094,6 +1132,7 @@
             knownWithoutSee: 0,
             totalCards: shuffled.length
         };
+
         document.getElementById('testDeckName').textContent = deck.name;
         showScreen('screen-test');
         renderTestCard();
@@ -1103,15 +1142,32 @@
         if (!currentTest) return;
         const deck = getDeck(currentTest.deckId);
         if (!deck) return;
+
         const ids = currentTest.cardIds;
         const idx = currentTest.currentIndex;
-        if (idx >= ids.length) { showResult(); return; }
+
+        if (idx >= ids.length) {
+            showResult();
+            return;
+        }
+
         const card = deck.cards.find(c => c.id === ids[idx]);
-        if (!card) { currentTest.currentIndex++; renderTestCard(); return; }
-        document.getElementById('progressFill').style.width = `${(idx / currentTest.totalCards) * 100}%`;
-        document.getElementById('progressCounter').textContent = `${idx} / ${currentTest.totalCards}`;
+        if (!card) {
+            currentTest.currentIndex++;
+            renderTestCard();
+            return;
+        }
+
+        const total = currentTest.totalCards;
+        document.getElementById('progressFill').style.width = `${(idx / total) * 100}%`;
+        document.getElementById('progressCounter').textContent = `${idx} / ${total}`;
+
         document.getElementById('questionText').textContent = card.question;
-        document.getElementById('answerText').innerHTML = `${card.answer}${card.example ? `<div class="example">${card.example}</div>` : ''}`;
+        document.getElementById('answerText').innerHTML = `
+            ${card.answer}
+            ${card.example ? `<div class="example">${card.example}</div>` : ''}
+        `;
+
         document.getElementById('cardFlip').classList.remove('flipped');
         document.getElementById('stateFront').classList.remove('hidden');
         document.getElementById('stateBack').classList.add('hidden');
@@ -1131,7 +1187,12 @@
         currentTest.retries++;
     }
 
-    function handleKnow() { if (!currentTest) return; currentTest.currentIndex++; renderTestCard(); }
+    function handleKnow() {
+        if (!currentTest) return;
+        currentTest.currentIndex++;
+        renderTestCard();
+    }
+
     function handleRetry() {
         if (!currentTest) return;
         const id = currentTest.cardIds[currentTest.currentIndex];
@@ -1145,18 +1206,23 @@
     // ============================================================
     function showResult() {
         showScreen('screen-result');
-        document.getElementById('resultTotal').textContent = currentTest.totalCards;
-        document.getElementById('resultKnown').textContent = currentTest.knownWithoutSee;
-        document.getElementById('resultRetries').textContent = currentTest.retries;
-        const r = currentTest.retries;
-        if (r === 0 && currentTest.knownWithoutSee === currentTest.totalCards) {
+
+        const total = currentTest.totalCards;
+        const known = currentTest.knownWithoutSee;
+        const retries = currentTest.retries;
+
+        document.getElementById('resultTotal').textContent = total;
+        document.getElementById('resultKnown').textContent = known;
+        document.getElementById('resultRetries').textContent = retries;
+
+        if (retries === 0 && known === total) {
             document.getElementById('resultSub').textContent = '🌟 Идеально! Ты знаешь всё!';
-        } else if (r === 0) {
+        } else if (retries === 0) {
             document.getElementById('resultSub').textContent = '👏 Отлично! Ни разу не подглядел(а)!';
-        } else if (currentTest.knownWithoutSee > currentTest.totalCards / 2) {
-            document.getElementById('resultSub').textContent = `💪 Хороший результат! Подглядел(а) только ${r} раз${r % 10 === 1 && r % 100 !== 11 ? '' : 'а'}`;
+        } else if (known > total / 2) {
+            document.getElementById('resultSub').textContent = `💪 Хороший результат! Подглядел(а) только ${retries} раз${retries % 10 === 1 && retries % 100 !== 11 ? '' : 'а'}`;
         } else {
-            document.getElementById('resultSub').textContent = `📖 Неплохо! Подглядел(а) ${r} раз${r % 10 === 1 && r % 100 !== 11 ? '' : 'а'}`;
+            document.getElementById('resultSub').textContent = `📖 Неплохо! Подглядел(а) ${retries} раз${retries % 10 === 1 && retries % 100 !== 11 ? '' : 'а'}`;
         }
     }
 
@@ -1165,41 +1231,84 @@
     // ============================================================
     document.addEventListener('DOMContentLoaded', () => {
         loadData();
+
+        // Приветствие
         const h = new Date().getHours();
         let g = 'Доброй ночи';
         if (h >= 5 && h < 12) g = 'Доброе утро';
         else if (h >= 12 && h < 17) g = 'Добрый день';
         else if (h >= 17 && h < 23) g = 'Добрый вечер';
         document.getElementById('greetingTime').textContent = g;
+
         renderDecks();
 
-        // Создание колоды с автоматическим переходом
+        // Создание колоды
         document.getElementById('createDeckBtn').addEventListener('click', async () => {
-            const result = await promptModal('Новая колода', 'Придумайте название', [
-                { id: 'name', label: 'Название колоды', type: 'text', placeholder: 'Например: Английские слова', required: true, autofocus: true }
-            ]);
+            const result = await promptModal(
+                'Новая колода',
+                'Придумайте название',
+                [{ id: 'name', label: 'Название колоды', type: 'text', placeholder: 'Например: Английские слова', required: true, autofocus: true }]
+            );
+
             if (result && result.name.trim()) {
-                const newDeck = { id: generateId(), name: result.name.trim(), cards: [] };
+                const newDeck = {
+                    id: generateId(),
+                    name: result.name.trim(),
+                    cards: []
+                };
                 decks.push(newDeck);
                 saveData();
                 renderDecks();
-                // Автоматически открываем созданную колоду
+
+                // Автоматически открываем новую колоду
                 openDeck(newDeck.id);
             }
         });
 
-        document.getElementById('backToDecks').addEventListener('click', () => { showScreen('screen-decks'); renderDecks(); });
-        document.getElementById('backToDeckFromTest').addEventListener('click', () => {
-            if (currentTest) { const d = getDeck(currentTest.deckId); if (d) openDeck(d.id); }
+        // Назад к колодам
+        document.getElementById('backToDecks').addEventListener('click', () => {
+            currentDeckId = null;
+            showScreen('screen-decks');
+            renderDecks();
         });
+
+        // Назад из теста
+        document.getElementById('backToDeckFromTest').addEventListener('click', () => {
+            if (currentTest) {
+                const deck = getDeck(currentTest.deckId);
+                if (deck) {
+                    openDeck(deck.id);
+                } else {
+                    showScreen('screen-decks');
+                    renderDecks();
+                }
+            }
+        });
+
+        // Добавить карточку
         document.getElementById('addCardBtn').addEventListener('click', addCard);
-        document.getElementById('startTestBtn').addEventListener('click', () => { if (currentDeckId) startTest(currentDeckId); });
+
+        // Начать тест
+        document.getElementById('startTestBtn').addEventListener('click', () => {
+            if (currentDeckId) startTest(currentDeckId);
+        });
+
+        // Кнопки теста
         document.getElementById('knowWithoutSeeBtn').addEventListener('click', handleKnowWithoutSee);
         document.getElementById('showAnswerBtn').addEventListener('click', showAnswer);
         document.getElementById('knowBtn').addEventListener('click', handleKnow);
         document.getElementById('retryBtn').addEventListener('click', handleRetry);
-        document.getElementById('retestBtn').addEventListener('click', () => { if (currentTest) startTest(currentTest.deckId); });
-        document.getElementById('homeBtn').addEventListener('click', () => { showScreen('screen-decks'); renderDecks(); });
+
+        // Результаты
+        document.getElementById('retestBtn').addEventListener('click', () => {
+            if (currentTest) startTest(currentTest.deckId);
+        });
+
+        document.getElementById('homeBtn').addEventListener('click', () => {
+            currentDeckId = null;
+            showScreen('screen-decks');
+            renderDecks();
+        });
     });
 </script>
 
