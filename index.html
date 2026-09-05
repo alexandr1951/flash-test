@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Флэш-тест</title>
+
+    <!-- PWA Метатеги -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2B8C7A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== БАЗА ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #F0F2F5;
+            color: #1A1A1A;
+            min-height: 100vh;
+            padding: 28px 20px 100px 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .app { max-width: 600px; width: 100%; }
+        .hidden { display: none !important; }
+
+        /* ===== КНОПКИ ===== */
+        .btn-primary {
+            background: #2B8C7A;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-primary:hover { background: #237A69; }
+        .btn-primary:active { transform: scale(0.97); }
+
+        .btn-secondary {
+            background: #F3F4F6;
+            color: #1A1A1A;
+            border: 1px solid #E5E7EB;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-secondary:hover { background: #E5E7EB; }
+
+        .btn-success {
+            background: #2B8C7A;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-success:hover { background: #237A69; }
+        .btn-success:active { transform: scale(0.97); }
+
+        .btn-outline {
+            background: transparent;
+            color: #2B8C7A;
+            border: 1.5px solid #2B8C7A;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-outline:hover { background: #F0F7F5; }
+        .btn-outline:active { transform: scale(0.97); }
+
+        .btn-know-without-see {
+            background: #2B8C7A;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+        }
+        .btn-know-without-see:hover { background: #237A69; }
+        .btn-know-without-see:active { transform: scale(0.97); }
+
+        .btn-show-answer {
+            background: transparent;
+            color: #2B8C7A;
+            border: 1.5px solid #2B8C7A;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+        }
+        .btn-show-answer:hover { background: #F0F7F5; }
+        .btn-show-answer:active { transform: scale(0.97); }
+
+        /* ===== ШАПКА ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-top: 4px;
+        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6B7280;
+            padding: 4px 8px;
+            transition: color 0.2s;
+            font-weight: 300;
+        }
+        .back-btn:hover { color: #1A1A1A; }
+        .greeting { display: flex; flex-direction: column; gap: 2px; }
+        .greeting-time {
+            font-size: 13px;
+            font-weight: 500;
+            color: #6B7280;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .greeting-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1A1A1A;
+            line-height: 1.2;
+            letter-spacing: -0.3px;
+        }
+        .greeting-title span { color: #2B8C7A; }
+        .profile-icon {
+            width: 44px;
+            height: 44px;
+            background: #2B8C7A;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        /* ===== ЭКРАН 1: КОЛОДЫ ===== */
+        #screen-decks .sub-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 16px;
+        }
+        #screen-decks .sub-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A1A1A;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+        #screen-decks .sub-header .count-badge {
+            font-size: 14px;
+            color: #6B7280;
+            font-weight: 500;
+        }
+        .deck-list { display: flex; flex-direction: column; gap: 12px; }
+        .deck-item {
+            background: #FFFFFF;
+            border-radius: 14px;
+            padding: 18px 20px;
+            border: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .deck-item:hover { border-color: #2B8C7A; box-shadow: 0 2px 8px rgba(43,140,122,0.08); }
+        .deck-item:active { transform: scale(0.99); }
+        .deck-left { display: flex; align-items: center; gap: 16px; min-width: 0; flex: 1; }
+        .deck-icon {
+            width: 48px;
+            height: 48px;
+            background: #F3F4F6;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+            color: #4B5563;
+        }
+        .deck-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+        .deck-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1A1A1A;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: -0.2px;
+        }
+        .deck-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #6B7280;
+            font-weight: 400;
+        }
+        .deck-meta .dot { width: 4px; height: 4px; background: #D1D5DB; border-radius: 50%; }
+        .deck-start-btn {
+            background: #2B8C7A;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            white-space: nowrap;
+            flex-shrink: 0;
+            letter-spacing: 0.2px;
+        }
+        .deck-start-btn:hover { background: #237A69; }
+        .deck-start-btn:active { transform: scale(0.95); }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #FFFFFF;
+            border-radius: 14px;
+            border: 1px solid #E5E7EB;
+            margin-top: 10px;
+        }
+        .empty-state .icon { font-size: 48px; opacity: 0.5; margin-bottom: 16px; display: block; }
+        .empty-state h3 { color: #1A1A1A; font-weight: 600; font-size: 18px; margin-bottom: 6px; }
+        .empty-state p { color: #6B7280; font-size: 14px; }
+
+        /* ===== ЭКРАН 2: ВНУТРИ КОЛОДЫ ===== */
+        #screen-deck { display: none; }
+        #screen-deck .deck-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 6px;
+        }
+        #screen-deck .deck-header .card-count { font-size: 14px; color: #6B7280; font-weight: 500; }
+        #screen-deck .deck-stats {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .card-item {
+            background: #FFFFFF;
+            border-radius: 10px;
+            padding: 14px 16px;
+            border: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.2s;
+        }
+        .card-item:hover { border-color: #D1D5DB; }
+        .card-item .question {
+            font-weight: 500;
+            font-size: 15px;
+            color: #1A1A1A;
+            flex: 1;
+            margin-right: 12px;
+        }
+        .card-item .actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .card-item .actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px 6px;
+            transition: transform 0.1s;
+            opacity: 0.6;
+        }
+        .card-item .actions button:hover { opacity: 1; }
+        .card-item .actions button:active { transform: scale(0.9); }
+        .deck-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+
+        /* ===== ЭКРАН 3: ТЕСТ ===== */
+        #screen-test { display: none; }
+        .test-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+        .test-progress .progress-bar {
+            flex: 1;
+            height: 4px;
+            background: #E5E7EB;
+            border-radius: 4px;
+            margin-right: 16px;
+            overflow: hidden;
+        }
+        .test-progress .progress-bar .fill {
+            height: 100%;
+            background: #2B8C7A;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        .test-progress .counter { font-size: 14px; font-weight: 500; color: #6B7280; white-space: nowrap; }
+        .card-flip-container {
+            perspective: 1000px;
+            margin-bottom: 24px;
+            min-height: 320px;
+        }
+        .card-flip {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            transition: transform 0.5s ease;
+            transform-style: preserve-3d;
+        }
+        .card-flip.flipped { transform: rotateY(180deg); }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: #FFFFFF;
+            border-radius: 16px;
+            border: 1px solid #E5E7EB;
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .card-face .label { font-size: 12px; font-weight: 500; color: #6B7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+        .card-face .content { font-size: 22px; font-weight: 500; color: #1A1A1A; line-height: 1.4; word-break: break-word; max-height: 180px; overflow-y: auto; }
+        .card-face .content .example { font-size: 16px; font-weight: 400; color: #6B7280; margin-top: 12px; font-style: italic; }
+        .card-back { transform: rotateY(180deg); }
+        .card-back .content { font-weight: 600; color: #2B8C7A; }
+        .test-actions { display: flex; flex-direction: column; gap: 10px; }
+        .test-actions .action-row { display: flex; gap: 10px; }
+        .test-actions .action-row .btn-secondary { flex: 1; }
+        .test-actions .action-row .btn-success { flex: 1; }
+
+        /* ===== ЭКРАН 4: РЕЗУЛЬТАТ ===== */
+        #screen-result {
+            display: none;
+            text-align: center;
+            padding-top: 20px;
+        }
+        #screen-result .result-icon { font-size: 72px; margin-bottom: 16px; display: block; }
+        #screen-result .result-title { font-size: 28px; font-weight: 700; color: #1A1A1A; margin-bottom: 8px; }
+        #screen-result .result-sub { font-size: 16px; color: #6B7280; margin-bottom: 32px; }
+        #screen-result .result-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        #screen-result .stat-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            padding: 20px 16px;
+        }
+        #screen-result .stat-card .number { font-size: 28px; font-weight: 700; color: #1A1A1A; }
+        #screen-result .stat-card .label { font-size: 12px; color: #6B7280; margin-top: 4px; }
+        .stat-card.highlight { border-color: #2B8C7A; background: #F8FBF9; }
+        #screen-result .result-actions { display: flex; flex-direction: column; gap: 10px; }
+
+        /* ===== FAB ===== */
+        .fab {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 56px;
+            height: 56px;
+            background: #2B8C7A;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 30px;
+            font-weight: 300;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(43,140,122,0.25);
+            transition: transform 0.15s, background 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .fab:hover { background: #237A69; }
+        .fab:active { transform: scale(0.92); }
+        @media (min-width: 768px) {
+            .fab { bottom: 36px; right: calc(50% - 300px + 16px); }
+        }
+
+        /* ===== АНИМАЦИЯ ===== */
+        .deck-item {
+            opacity: 0;
+            animation: fadeUp 0.4s forwards;
+        }
+        .deck-item:nth-child(1) { animation-delay: 0.05s; }
+        .deck-item:nth-child(2) { animation-delay: 0.1s; }
+        .deck-item:nth-child(3) { animation-delay: 0.15s; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 420px) {
+            .card-face .content { font-size: 18px; }
+            .card-flip { height: 280px; }
+            .card-face { padding: 24px 16px; }
+            #screen-result .result-stats { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <!-- ЭКРАН 1: КОЛОДЫ -->
+    <div id="screen-decks">
+        <header class="header">
+            <div class="greeting">
+                <span class="greeting-time" id="greetingTime">Доброе утро</span>
+                <h1 class="greeting-title">Чем сегодня <br><span>займемся</span>?</h1>
+            </div>
+            <div class="profile-icon">А</div>
+        </header>
+        <div class="sub-header">
+            <h2>Мои колоды</h2>
+            <span class="count-badge" id="deckCount">0 колод</span>
+        </div>
+        <div class="deck-list" id="deckList"></div>
+        <button class="fab" id="createDeckBtn">+</button>
+    </div>
+
+    <!-- ЭКРАН 2: ВНУТРИ КОЛОДЫ -->
+    <div id="screen-deck">
+        <header class="header">
+            <div class="header-left">
+                <button class="back-btn" id="backToDecks">←</button>
+                <div class="greeting">
+                    <span class="greeting-time">Колода</span>
+                    <h1 class="greeting-title" id="currentDeckName">Название</h1>
+                </div>
+            </div>
+            <div class="profile-icon">А</div>
+        </header>
+        <div class="deck-header">
+            <span class="card-count" id="cardCount">0 карт</span>
+        </div>
+        <div class="deck-stats" id="deckStats">Изучено: 0 из 0</div>
+        <div class="card-list" id="cardList"></div>
+        <div class="deck-actions">
+            <button class="btn-primary" id="addCardBtn">➕ Добавить карточку</button>
+            <button class="btn-primary" id="startTestBtn">🚀 Пройти тест</button>
+        </div>
+    </div>
+
+    <!-- ЭКРАН 3: ТЕСТ -->
+    <div id="screen-test">
+        <header class="header">
+            <div class="header-left">
+                <button class="back-btn" id="backToDeckFromTest">←</button>
+                <div class="greeting">
+                    <span class="greeting-time">Тестирование</span>
+                    <h1 class="greeting-title" id="testDeckName">Название</h1>
+                </div>
+            </div>
+            <div class="profile-icon">А</div>
+        </header>
+        <div class="test-progress">
+            <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
+            <span class="counter" id="progressCounter">0 / 0</span>
+        </div>
+        <div class="card-flip-container">
+            <div class="card-flip" id="cardFlip">
+                <div class="card-face card-front">
+                    <div class="label">Вопрос</div>
+                    <div class="content" id="questionText">Вопрос</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="label">Ответ</div>
+                    <div class="content" id="answerText">
+                        Ответ
+                        <div class="example" id="exampleText"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="test-actions" id="testActions">
+            <div id="stateFront">
+                <div class="action-row">
+                    <button class="btn-know-without-see" id="knowWithoutSeeBtn">😊 Знаю</button>
+                </div>
+                <button class="btn-show-answer" id="showAnswerBtn">📖 Показать ответ</button>
+            </div>
+            <div id="stateBack" class="hidden">
+                <div class="action-row">
+                    <button class="btn-secondary" id="retryBtn">🤔 Еще разок</button>
+                    <button class="btn-success" id="knowBtn">😊 Знаю</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН 4: РЕЗУЛЬТАТ -->
+    <div id="screen-result">
+        <header class="header">
+            <div class="greeting">
+                <span class="greeting-time">Готово!</span>
+                <h1 class="greeting-title">Результаты <br><span>теста</span></h1>
+            </div>
+            <div class="profile-icon">А</div>
+        </header>
+        <span class="result-icon">🎉</span>
+        <div class="result-title">Ты справился!</div>
+        <div class="result-sub" id="resultSub">Повторил(а) все карточки</div>
+        <div class="result-stats">
+            <div class="stat-card">
+                <div class="number" id="resultTotal">0</div>
+                <div class="label">Всего карт</div>
+            </div>
+            <div class="stat-card highlight">
+                <div class="number" id="resultKnown">0</div>
+                <div class="label">Знаю без подсказки</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="resultRetries">0</div>
+                <div class="label">Подглядел(а)</div>
+            </div>
+        </div>
+        <div class="result-actions">
+            <button class="btn-primary" id="retestBtn">🔄 Пройти заново</button>
+            <button class="btn-secondary" id="homeBtn">🏠 На главную</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    //  МОДЕЛЬ ДАННЫХ
+    // ============================================================
+    let decks = [];
+    let currentDeckId = null;
+    let currentTest = null;
+
+    function loadData() {
+        const saved = localStorage.getItem('flashDecks');
+        if (saved) {
+            try { decks = JSON.parse(saved); } catch (e) { decks = []; }
+        }
+        if (decks.length === 0) {
+            decks = [
+                { id: Date.now()+1, name: 'Английские слова', cards: [
+                    { id: Date.now()+10, question: 'Apple', answer: 'Яблоко', example: 'I eat an apple' },
+                    { id: Date.now()+11, question: 'Car', answer: 'Машина', example: 'This is my car' },
+                    { id: Date.now()+12, question: 'House', answer: 'Дом', example: 'I live in a house' },
+                    { id: Date.now()+13, question: 'Beautiful', answer: 'Красивый', example: 'She is beautiful' },
+                    { id: Date.now()+14, question: 'To learn', answer: 'Учить', example: 'I learn English' }
+                ]},
+                { id: Date.now()+2, name: 'Фразы на каждый день', cards: [
+                    { id: Date.now()+20, question: 'How are you?', answer: 'Как дела?', example: 'Used when meeting someone' },
+                    { id: Date.now()+21, question: 'Good morning', answer: 'Доброе утро', example: 'Morning greeting' },
+                    { id: Date.now()+22, question: 'Thank you', answer: 'Спасибо', example: 'Polite response' }
+                ]},
+                { id: Date.now()+3, name: 'Даты истории России', cards: [
+                    { id: Date.now()+30, question: '988 год', answer: 'Крещение Руси', example: '' },
+                    { id: Date.now()+31, question: '1242 год', answer: 'Ледовое побоище', example: '' },
+                    { id: Date.now()+32, question: '1612 год', answer: 'Освобождение Москвы', example: '' }
+                ]}
+            ];
+            saveData();
+        }
+    }
+
+    function saveData() { localStorage.setItem('flashDecks', JSON.stringify(decks)); }
+    function getDeck(id) { return decks.find(d => d.id === id); }
+    function generateId() { return Date.now() + Math.random() * 1000; }
+
+    // ============================================================
+    //  НАВИГАЦИЯ
+    // ============================================================
+    function showScreen(id) {
+        document.querySelectorAll('#screen-decks, #screen-deck, #screen-test, #screen-result').forEach(el => el.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+        document.querySelector('.fab').style.display = (id === 'screen-decks') ? 'flex' : 'none';
+    }
+
+    // ============================================================
+    //  ЭКРАН 1
+    // ============================================================
+    function renderDecks() {
+        const list = document.getElementById('deckList');
+        document.getElementById('deckCount').textContent = `${decks.length} колод${decks.length % 10 === 1 && decks.length % 100 !== 11 ? 'а' : ''}`;
+        if (decks.length === 0) {
+            list.innerHTML = `<div class="empty-state"><span class="icon">📭</span><h3>Здесь пока пусто</h3><p>Создайте свою первую колоду</p></div>`;
+            return;
+        }
+        list.innerHTML = decks.map(d => `
+            <div class="deck-item" data-deck-id="${d.id}">
+                <div class="deck-left">
+                    <div class="deck-icon">📚</div>
+                    <div class="deck-info">
+                        <span class="deck-name">${d.name}</span>
+                        <div class="deck-meta">
+                            <span>${d.cards.length} карт${d.cards.length % 10 === 1 && d.cards.length % 100 !== 11 ? 'а' : ''}</span>
+                            <span class="dot"></span>
+                            <span>${d.cards.length > 0 ? 'Готово' : 'Пусто'}</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="deck-start-btn" data-deck-id="${d.id}">Начать</button>
+            </div>
+        `).join('');
+        document.querySelectorAll('.deck-item').forEach(el => {
+            el.addEventListener('click', e => {
+                if (e.target.classList.contains('deck-start-btn')) return;
+                openDeck(parseInt(el.dataset.deckId));
+            });
+        });
+        document.querySelectorAll('.deck-start-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                openDeck(parseInt(btn.dataset.deckId));
+            });
+        });
+    }
+
+    // ============================================================
+    //  ЭКРАН 2
+    // ============================================================
+    function openDeck(id) {
+        currentDeckId = id;
+        const deck = getDeck(id);
+        if (!deck) return;
+        document.getElementById('currentDeckName').textContent = deck.name;
+        document.getElementById('cardCount').textContent = `${deck.cards.length} карт${deck.cards.length % 10 === 1 && deck.cards.length % 100 !== 11 ? 'а' : ''}`;
+        document.getElementById('deckStats').textContent = `Изучено: ${deck.cards.filter(c => c.studied).length} из ${deck.cards.length}`;
+        renderCards(deck);
+        showScreen('screen-deck');
+    }
+
+    function renderCards(deck) {
+        const list = document.getElementById('cardList');
+        if (deck.cards.length === 0) {
+            list.innerHTML = `<div style="text-align:center;padding:30px;color:#6B7280;">Нет карточек. Добавьте первую!</div>`;
+            return;
+        }
+        list.innerHTML = deck.cards.map(c => `
+            <div class="card-item" data-card-id="${c.id}">
+                <span class="question">${c.question}</span>
+                <div class="actions">
+                    <button class="edit-card" data-card-id="${c.id}">✏️</button>
+                    <button class="delete-card" data-card-id="${c.id}">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+        document.querySelectorAll('.delete-card').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                if (!confirm('Удалить карточку?')) return;
+                const deck = getDeck(currentDeckId);
+                deck.cards = deck.cards.filter(c => c.id !== parseInt(btn.dataset.cardId));
+                saveData();
+                openDeck(currentDeckId);
+            });
+        });
+        document.querySelectorAll('.edit-card').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const deck = getDeck(currentDeckId);
+                const card = deck.cards.find(c => c.id === parseInt(btn.dataset.cardId));
+                if (!card) return;
+                const q = prompt('Вопрос:', card.question);
+                if (q === null) return;
+                const a = prompt('Ответ:', card.answer);
+                if (a === null) return;
+                const ex = prompt('Пример:', card.example || '');
+                card.question = q.trim() || card.question;
+                card.answer = a.trim() || card.answer;
+                card.example = ex !== null ? ex.trim() : card.example;
+                saveData();
+                openDeck(currentDeckId);
+            });
+        });
+    }
+
+    function addCard() {
+        const deck = getDeck(currentDeckId);
+        if (!deck) return;
+        const q = prompt('Вопрос:');
+        if (q === null || q.trim() === '') return;
+        const a = prompt('Ответ:');
+        if (a === null || a.trim() === '') return;
+        const e = prompt('Пример (опционально):') || '';
+        deck.cards.push({ id: generateId(), question: q.trim(), answer: a.trim(), example: e.trim() });
+        saveData();
+        openDeck(currentDeckId);
+    }
+
+    // ============================================================
+    //  ЭКРАН 3: ТЕСТ
+    // ============================================================
+    function startTest(id) {
+        const deck = getDeck(id);
+        if (!deck || deck.cards.length === 0) { alert('Нет карточек!'); return; }
+        const shuffled = [...deck.cards].sort(() => Math.random() - 0.5);
+        currentTest = {
+            deckId: id,
+            cardIds: shuffled.map(c => c.id),
+            currentIndex: 0,
+            retries: 0,
+            knownWithoutSee: 0,
+            totalCards: shuffled.length
+        };
+        document.getElementById('testDeckName').textContent = deck.name;
+        showScreen('screen-test');
+        renderTestCard();
+    }
+
+    function renderTestCard() {
+        if (!currentTest) return;
+        const deck = getDeck(currentTest.deckId);
+        if (!deck) return;
+        const ids = currentTest.cardIds;
+        const idx = currentTest.currentIndex;
+        if (idx >= ids.length) { showResult(); return; }
+        const card = deck.cards.find(c => c.id === ids[idx]);
+        if (!card) { currentTest.currentIndex++; renderTestCard(); return; }
+        document.getElementById('progressFill').style.width = `${(idx / currentTest.totalCards) * 100}%`;
+        document.getElementById('progressCounter').textContent = `${idx} / ${currentTest.totalCards}`;
+        document.getElementById('questionText').textContent = card.question;
+        document.getElementById('answerText').innerHTML = `${card.answer}${card.example ? `<div class="example">${card.example}</div>` : ''}`;
+        document.getElementById('cardFlip').classList.remove('flipped');
+        document.getElementById('stateFront').classList.remove('hidden');
+        document.getElementById('stateBack').classList.add('hidden');
+    }
+
+    function handleKnowWithoutSee() {
+        if (!currentTest) return;
+        currentTest.knownWithoutSee++;
+        currentTest.currentIndex++;
+        renderTestCard();
+    }
+
+    function showAnswer() {
+        document.getElementById('cardFlip').classList.add('flipped');
+        document.getElementById('stateFront').classList.add('hidden');
+        document.getElementById('stateBack').classList.remove('hidden');
+        currentTest.retries++;
+    }
+
+    function handleKnow() { if (!currentTest) return; currentTest.currentIndex++; renderTestCard(); }
+    function handleRetry() {
+        if (!currentTest) return;
+        const id = currentTest.cardIds[currentTest.currentIndex];
+        currentTest.cardIds.splice(currentTest.currentIndex, 1);
+        currentTest.cardIds.push(id);
+        renderTestCard();
+    }
+
+    // ============================================================
+    //  ЭКРАН 4: РЕЗУЛЬТАТ
+    // ============================================================
+    function showResult() {
+        showScreen('screen-result');
+        document.getElementById('resultTotal').textContent = currentTest.totalCards;
+        document.getElementById('resultKnown').textContent = currentTest.knownWithoutSee;
+        document.getElementById('resultRetries').textContent = currentTest.retries;
+        const r = currentTest.retries;
+        if (r === 0 && currentTest.knownWithoutSee === currentTest.totalCards) {
+            document.getElementById('resultSub').textContent = '🌟 Идеально! Ты знаешь всё!';
+        } else if (r === 0) {
+            document.getElementById('resultSub').textContent = '👏 Отлично! Ни разу не подглядел(а)!';
+        } else if (currentTest.knownWithoutSee > currentTest.totalCards / 2) {
+            document.getElementById('resultSub').textContent = `💪 Хороший результат! Подглядел(а) только ${r} раз${r % 10 === 1 && r % 100 !== 11 ? '' : 'а'}`;
+        } else {
+            document.getElementById('resultSub').textContent = `📖 Неплохо! Подглядел(а) ${r} раз${r % 10 === 1 && r % 100 !== 11 ? '' : 'а'}`;
+        }
+    }
+
+    // ============================================================
+    //  СОБЫТИЯ
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData();
+        const h = new Date().getHours();
+        let g = 'Доброй ночи';
+        if (h >= 5 && h < 12) g = 'Доброе утро';
+        else if (h >= 12 && h < 17) g = 'Добрый день';
+        else if (h >= 17 && h < 23) g = 'Добрый вечер';
+        document.getElementById('greetingTime').textContent = g;
+        renderDecks();
+
+        document.getElementById('createDeckBtn').addEventListener('click', () => {
+            const name = prompt('Название колоды:');
+            if (name && name.trim()) {
+                decks.push({ id: generateId(), name: name.trim(), cards: [] });
+                saveData();
+                renderDecks();
+            }
+        });
+        document.getElementById('backToDecks').addEventListener('click', () => { showScreen('screen-decks'); renderDecks(); });
+        document.getElementById('backToDeckFromTest').addEventListener('click', () => {
+            if (currentTest) { const d = getDeck(currentTest.deckId); if (d) openDeck(d.id); }
+        });
+        document.getElementById('addCardBtn').addEventListener('click', addCard);
+        document.getElementById('startTestBtn').addEventListener('click', () => { if (currentDeckId) startTest(currentDeckId); });
+        document.getElementById('knowWithoutSeeBtn').addEventListener('click', handleKnowWithoutSee);
+        document.getElementById('showAnswerBtn').addEventListener('click', showAnswer);
+        document.getElementById('knowBtn').addEventListener('click', handleKnow);
+        document.getElementById('retryBtn').addEventListener('click', handleRetry);
+        document.getElementById('retestBtn').addEventListener('click', () => { if (currentTest) startTest(currentTest.deckId); });
+        document.getElementById('homeBtn').addEventListener('click', () => { showScreen('screen-decks'); renderDecks(); });
+    });
+</script>
+</body>
+</html>
