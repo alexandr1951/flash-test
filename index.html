@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 
     <style>
-        /* ===== ОСНОВНЫЕ СТИЛИ ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -71,21 +70,31 @@
         .btn-success:hover { background: #237A69; }
         .btn-success:active { transform: scale(0.97); }
 
-        .btn-outline {
-            background: transparent;
-            color: #2B8C7A;
-            border: 1.5px solid #2B8C7A;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+        .btn-danger-small {
+            background: #EF4444;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            width: 100%;
-            text-align: center;
+            transition: background 0.2s;
         }
-        .btn-outline:hover { background: #F0F7F5; }
-        .btn-outline:active { transform: scale(0.97); }
+        .btn-danger-small:hover { background: #DC2626; }
+
+        .btn-outline-small {
+            background: transparent;
+            color: #6B7280;
+            border: 1px solid #E5E7EB;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-outline-small:hover { background: #F3F4F6; }
 
         .btn-know-without-see {
             background: #2B8C7A;
@@ -212,10 +221,17 @@
             justify-content: space-between;
             cursor: pointer;
             transition: border-color 0.2s, box-shadow 0.2s;
+            gap: 8px;
         }
         .deck-item:hover { border-color: #2B8C7A; box-shadow: 0 2px 8px rgba(43,140,122,0.08); }
         .deck-item:active { transform: scale(0.99); }
-        .deck-left { display: flex; align-items: center; gap: 16px; min-width: 0; flex: 1; }
+        .deck-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 0;
+            flex: 1;
+        }
         .deck-icon {
             width: 48px;
             height: 48px;
@@ -247,6 +263,13 @@
             font-weight: 400;
         }
         .deck-meta .dot { width: 4px; height: 4px; background: #D1D5DB; border-radius: 50%; }
+
+        .deck-actions-buttons {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
         .deck-start-btn {
             background: #2B8C7A;
             color: white;
@@ -263,6 +286,19 @@
         }
         .deck-start-btn:hover { background: #237A69; }
         .deck-start-btn:active { transform: scale(0.95); }
+
+        .deck-delete-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.4;
+            transition: opacity 0.2s, transform 0.1s;
+            padding: 4px 6px;
+        }
+        .deck-delete-btn:hover { opacity: 1; }
+        .deck-delete-btn:active { transform: scale(0.9); }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -550,6 +586,14 @@
             .card-face { padding: 24px 16px; }
             #screen-result .result-stats { grid-template-columns: 1fr 1fr; }
             .modal-box { padding: 24px 16px; }
+            .deck-item {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .deck-actions-buttons {
+                width: 100%;
+                justify-content: flex-end;
+            }
         }
     </style>
 </head>
@@ -681,11 +725,7 @@
             <button class="btn-close-modal" id="modalCloseBtn">✕</button>
             <h3 id="modalTitle">Название</h3>
             <div class="sub" id="modalSub">Заполните поля</div>
-
-            <div id="modalFields">
-                <!-- Поля подставляются динамически -->
-            </div>
-
+            <div id="modalFields"></div>
             <div class="modal-actions">
                 <button class="btn-secondary" id="modalCancelBtn">Отмена</button>
                 <button class="btn-primary" id="modalConfirmBtn">Сохранить</button>
@@ -701,8 +741,6 @@
     let decks = [];
     let currentDeckId = null;
     let currentTest = null;
-
-    // Состояние модалки
     let modalResolve = null;
 
     function loadData() {
@@ -716,18 +754,10 @@
                     { id: Date.now()+10, question: 'Apple', answer: 'Яблоко', example: 'I eat an apple' },
                     { id: Date.now()+11, question: 'Car', answer: 'Машина', example: 'This is my car' },
                     { id: Date.now()+12, question: 'House', answer: 'Дом', example: 'I live in a house' },
-                    { id: Date.now()+13, question: 'Beautiful', answer: 'Красивый', example: 'She is beautiful' },
-                    { id: Date.now()+14, question: 'To learn', answer: 'Учить', example: 'I learn English' }
                 ]},
                 { id: Date.now()+2, name: 'Фразы на каждый день', cards: [
                     { id: Date.now()+20, question: 'How are you?', answer: 'Как дела?', example: 'Used when meeting someone' },
                     { id: Date.now()+21, question: 'Good morning', answer: 'Доброе утро', example: 'Morning greeting' },
-                    { id: Date.now()+22, question: 'Thank you', answer: 'Спасибо', example: 'Polite response' }
-                ]},
-                { id: Date.now()+3, name: 'Даты истории России', cards: [
-                    { id: Date.now()+30, question: '988 год', answer: 'Крещение Руси', example: '' },
-                    { id: Date.now()+31, question: '1242 год', answer: 'Ледовое побоище', example: '' },
-                    { id: Date.now()+32, question: '1612 год', answer: 'Освобождение Москвы', example: '' }
                 ]}
             ];
             saveData();
@@ -739,7 +769,7 @@
     function generateId() { return Date.now() + Math.random() * 1000; }
 
     // ============================================================
-    //  КАСТОМНАЯ МОДАЛКА (вместо prompt/alert)
+    //  КАСТОМНАЯ МОДАЛКА
     // ============================================================
     function showModal(config) {
         return new Promise((resolve) => {
@@ -754,7 +784,6 @@
             title.textContent = config.title || 'Название';
             sub.textContent = config.subtitle || '';
 
-            // Строим поля
             fields.innerHTML = '';
             config.fields.forEach(f => {
                 const label = document.createElement('label');
@@ -774,19 +803,16 @@
                     input.id = 'modal-field-' + f.id;
                     input.placeholder = f.placeholder || '';
                     input.value = f.value || '';
-                    if (f.type === 'text' && f.autofocus) {
-                        setTimeout(() => input.focus(), 100);
+                    if (f.autofocus) {
+                        setTimeout(() => input.focus(), 150);
                     }
                     fields.appendChild(input);
                 }
             });
 
-            // Сброс предыдущего resolve
             modalResolve = null;
 
-            const cleanup = () => {
-                overlay.classList.add('hidden');
-            };
+            const cleanup = () => { overlay.classList.add('hidden'); };
 
             const getValues = () => {
                 const result = {};
@@ -799,7 +825,6 @@
 
             const onConfirm = () => {
                 const values = getValues();
-                // Простая валидация
                 let valid = true;
                 config.fields.forEach(f => {
                     if (f.required && !values[f.id].trim()) {
@@ -828,17 +853,14 @@
                 modalResolve = null;
             };
 
-            // Навешиваем обработчики
             confirmBtn.onclick = onConfirm;
             cancelBtn.onclick = onCancel;
             closeBtn.onclick = onCancel;
 
-            // Закрытие по клику на оверлей (но не на модалку)
             overlay.onclick = (e) => {
                 if (e.target === overlay) onCancel();
             };
 
-            // Enter на последнем поле
             const allInputs = fields.querySelectorAll('input, textarea');
             allInputs.forEach((el, idx) => {
                 el.addEventListener('keydown', (e) => {
@@ -858,7 +880,6 @@
         });
     }
 
-    // Обертка для простого вызова с 1-3 полями
     async function promptModal(title, subtitle, fields) {
         const result = await showModal({ title, subtitle, fields });
         return result;
@@ -896,19 +917,67 @@
                         </div>
                     </div>
                 </div>
-                <button class="deck-start-btn" data-deck-id="${d.id}">Начать</button>
+                <div class="deck-actions-buttons">
+                    <button class="btn-outline-small edit-deck-btn" data-deck-id="${d.id}">✏️</button>
+                    <button class="btn-danger-small delete-deck-btn" data-deck-id="${d.id}">🗑️</button>
+                    <button class="deck-start-btn" data-deck-id="${d.id}">Начать</button>
+                </div>
             </div>
         `).join('');
+
+        // Открыть колоду (клик по карточке)
         document.querySelectorAll('.deck-item').forEach(el => {
             el.addEventListener('click', e => {
-                if (e.target.classList.contains('deck-start-btn')) return;
+                if (e.target.closest('.deck-start-btn') || e.target.closest('.delete-deck-btn') || e.target.closest('.edit-deck-btn')) return;
                 openDeck(parseInt(el.dataset.deckId));
             });
         });
+
+        // Кнопка "Начать"
         document.querySelectorAll('.deck-start-btn').forEach(btn => {
             btn.addEventListener('click', e => {
                 e.stopPropagation();
                 openDeck(parseInt(btn.dataset.deckId));
+            });
+        });
+
+        // Удалить колоду
+        document.querySelectorAll('.delete-deck-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const deckId = parseInt(btn.dataset.deckId);
+                const deck = getDeck(deckId);
+                if (!deck) return;
+                const result = await promptModal(
+                    'Удалить колоду?',
+                    `Вы уверены, что хотите удалить "${deck.name}"? Все карточки будут потеряны. Введите "да" для подтверждения.`,
+                    [{ id: 'confirm', label: 'Введите "да"', type: 'text', placeholder: 'да', required: true, autofocus: true }]
+                );
+                if (result && result.confirm.trim().toLowerCase() === 'да') {
+                    decks = decks.filter(d => d.id !== deckId);
+                    saveData();
+                    renderDecks();
+                }
+            });
+        });
+
+        // Редактировать название колоды
+        document.querySelectorAll('.edit-deck-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const deckId = parseInt(btn.dataset.deckId);
+                const deck = getDeck(deckId);
+                if (!deck) return;
+                const result = await promptModal(
+                    'Редактировать колоду',
+                    'Измените название',
+                    [{ id: 'name', label: 'Название колоды', type: 'text', value: deck.name, required: true, autofocus: true }]
+                );
+                if (result && result.name.trim()) {
+                    deck.name = result.name.trim();
+                    saveData();
+                    renderDecks();
+                }
             });
         });
     }
@@ -942,11 +1011,12 @@
                 </div>
             </div>
         `).join('');
+
         document.querySelectorAll('.delete-card').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const result = await promptModal('Удалить карточку?', 'Это действие нельзя отменить', [
-                    { id: 'confirm', label: 'Введите "да" для подтверждения', type: 'text', placeholder: 'да' }
+                    { id: 'confirm', label: 'Введите "да" для подтверждения', type: 'text', placeholder: 'да', required: true, autofocus: true }
                 ]);
                 if (result && result.confirm.trim().toLowerCase() === 'да') {
                     const deck = getDeck(currentDeckId);
@@ -956,6 +1026,7 @@
                 }
             });
         });
+
         document.querySelectorAll('.edit-card').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -965,7 +1036,7 @@
                 const result = await promptModal('Редактировать карточку', 'Измените данные', [
                     { id: 'question', label: 'Вопрос', type: 'text', value: card.question, required: true, autofocus: true },
                     { id: 'answer', label: 'Ответ', type: 'text', value: card.answer, required: true },
-                    { id: 'example', label: 'Пример использования (опционально)', type: 'text', value: card.example || '' }
+                    { id: 'example', label: 'Пример использования', type: 'text', value: card.example || '' }
                 ]);
                 if (result) {
                     card.question = result.question.trim() || card.question;
@@ -979,7 +1050,7 @@
     }
 
     // ============================================================
-    //  ДОБАВЛЕНИЕ КАРТОЧКИ (через модалку)
+    //  ДОБАВЛЕНИЕ КАРТОЧКИ
     // ============================================================
     async function addCard() {
         const deck = getDeck(currentDeckId);
