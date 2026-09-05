@@ -4,19 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Флэш-тест</title>
-
-    <!-- PWA Метатеги -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2B8C7A">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 
     <style>
-        /* ===== БАЗА ===== */
+        /* ===== ОСНОВНЫЕ СТИЛИ ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -123,6 +116,20 @@
         }
         .btn-show-answer:hover { background: #F0F7F5; }
         .btn-show-answer:active { transform: scale(0.97); }
+
+        .btn-close-modal {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #6B7280;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: color 0.2s;
+            position: absolute;
+            top: 12px;
+            right: 16px;
+        }
+        .btn-close-modal:hover { color: #1A1A1A; }
 
         /* ===== ШАПКА ===== */
         .header {
@@ -439,6 +446,90 @@
             .fab { bottom: 36px; right: calc(50% - 300px + 16px); }
         }
 
+        /* ===== КАСТОМНАЯ МОДАЛКА ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-overlay.hidden { display: none; }
+
+        .modal-box {
+            background: #FFFFFF;
+            border-radius: 20px;
+            padding: 32px 24px 24px;
+            max-width: 420px;
+            width: 100%;
+            position: relative;
+            animation: slideUp 0.25s ease;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        .modal-box h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 6px;
+        }
+        .modal-box .sub {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 20px;
+        }
+        .modal-box label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1A1A1A;
+            display: block;
+            margin-top: 14px;
+            margin-bottom: 4px;
+        }
+        .modal-box input,
+        .modal-box textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s;
+            background: #F9FAFB;
+        }
+        .modal-box input:focus,
+        .modal-box textarea:focus {
+            outline: none;
+            border-color: #2B8C7A;
+            background: #FFFFFF;
+        }
+        .modal-box textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-box .modal-actions .btn-secondary { flex: 1; }
+        .modal-box .modal-actions .btn-primary { flex: 1; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
         /* ===== АНИМАЦИЯ ===== */
         .deck-item {
             opacity: 0;
@@ -458,6 +549,7 @@
             .card-flip { height: 280px; }
             .card-face { padding: 24px 16px; }
             #screen-result .result-stats { grid-template-columns: 1fr 1fr; }
+            .modal-box { padding: 24px 16px; }
         }
     </style>
 </head>
@@ -582,6 +674,24 @@
             <button class="btn-secondary" id="homeBtn">🏠 На главную</button>
         </div>
     </div>
+
+    <!-- ===== КАСТОМНАЯ МОДАЛКА ===== -->
+    <div class="modal-overlay hidden" id="modalOverlay">
+        <div class="modal-box">
+            <button class="btn-close-modal" id="modalCloseBtn">✕</button>
+            <h3 id="modalTitle">Название</h3>
+            <div class="sub" id="modalSub">Заполните поля</div>
+
+            <div id="modalFields">
+                <!-- Поля подставляются динамически -->
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-secondary" id="modalCancelBtn">Отмена</button>
+                <button class="btn-primary" id="modalConfirmBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -591,6 +701,9 @@
     let decks = [];
     let currentDeckId = null;
     let currentTest = null;
+
+    // Состояние модалки
+    let modalResolve = null;
 
     function loadData() {
         const saved = localStorage.getItem('flashDecks');
@@ -624,6 +737,132 @@
     function saveData() { localStorage.setItem('flashDecks', JSON.stringify(decks)); }
     function getDeck(id) { return decks.find(d => d.id === id); }
     function generateId() { return Date.now() + Math.random() * 1000; }
+
+    // ============================================================
+    //  КАСТОМНАЯ МОДАЛКА (вместо prompt/alert)
+    // ============================================================
+    function showModal(config) {
+        return new Promise((resolve) => {
+            const overlay = document.getElementById('modalOverlay');
+            const title = document.getElementById('modalTitle');
+            const sub = document.getElementById('modalSub');
+            const fields = document.getElementById('modalFields');
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            const cancelBtn = document.getElementById('modalCancelBtn');
+            const closeBtn = document.getElementById('modalCloseBtn');
+
+            title.textContent = config.title || 'Название';
+            sub.textContent = config.subtitle || '';
+
+            // Строим поля
+            fields.innerHTML = '';
+            config.fields.forEach(f => {
+                const label = document.createElement('label');
+                label.textContent = f.label;
+                fields.appendChild(label);
+
+                if (f.type === 'textarea') {
+                    const textarea = document.createElement('textarea');
+                    textarea.id = 'modal-field-' + f.id;
+                    textarea.placeholder = f.placeholder || '';
+                    textarea.value = f.value || '';
+                    if (f.rows) textarea.rows = f.rows;
+                    fields.appendChild(textarea);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = f.type || 'text';
+                    input.id = 'modal-field-' + f.id;
+                    input.placeholder = f.placeholder || '';
+                    input.value = f.value || '';
+                    if (f.type === 'text' && f.autofocus) {
+                        setTimeout(() => input.focus(), 100);
+                    }
+                    fields.appendChild(input);
+                }
+            });
+
+            // Сброс предыдущего resolve
+            modalResolve = null;
+
+            const cleanup = () => {
+                overlay.classList.add('hidden');
+            };
+
+            const getValues = () => {
+                const result = {};
+                config.fields.forEach(f => {
+                    const el = document.getElementById('modal-field-' + f.id);
+                    result[f.id] = el ? el.value : '';
+                });
+                return result;
+            };
+
+            const onConfirm = () => {
+                const values = getValues();
+                // Простая валидация
+                let valid = true;
+                config.fields.forEach(f => {
+                    if (f.required && !values[f.id].trim()) {
+                        valid = false;
+                        const el = document.getElementById('modal-field-' + f.id);
+                        if (el) {
+                            el.style.borderColor = '#EF4444';
+                            setTimeout(() => el.style.borderColor = '', 1500);
+                        }
+                    }
+                });
+                if (!valid) {
+                    sub.textContent = '⚠️ Заполните все обязательные поля';
+                    sub.style.color = '#EF4444';
+                    setTimeout(() => { sub.style.color = '#6B7280'; }, 2000);
+                    return;
+                }
+                cleanup();
+                if (modalResolve) modalResolve(values);
+                modalResolve = null;
+            };
+
+            const onCancel = () => {
+                cleanup();
+                if (modalResolve) modalResolve(null);
+                modalResolve = null;
+            };
+
+            // Навешиваем обработчики
+            confirmBtn.onclick = onConfirm;
+            cancelBtn.onclick = onCancel;
+            closeBtn.onclick = onCancel;
+
+            // Закрытие по клику на оверлей (но не на модалку)
+            overlay.onclick = (e) => {
+                if (e.target === overlay) onCancel();
+            };
+
+            // Enter на последнем поле
+            const allInputs = fields.querySelectorAll('input, textarea');
+            allInputs.forEach((el, idx) => {
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (idx === allInputs.length - 1) {
+                            onConfirm();
+                        } else {
+                            allInputs[idx + 1].focus();
+                        }
+                    }
+                });
+            });
+
+            overlay.classList.remove('hidden');
+            modalResolve = resolve;
+        });
+    }
+
+    // Обертка для простого вызова с 1-3 полями
+    async function promptModal(title, subtitle, fields) {
+        const result = await showModal({ title, subtitle, fields });
+        return result;
+    }
 
     // ============================================================
     //  НАВИГАЦИЯ
@@ -704,46 +943,62 @@
             </div>
         `).join('');
         document.querySelectorAll('.delete-card').forEach(btn => {
-            btn.addEventListener('click', e => {
+            btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                if (!confirm('Удалить карточку?')) return;
-                const deck = getDeck(currentDeckId);
-                deck.cards = deck.cards.filter(c => c.id !== parseInt(btn.dataset.cardId));
-                saveData();
-                openDeck(currentDeckId);
+                const result = await promptModal('Удалить карточку?', 'Это действие нельзя отменить', [
+                    { id: 'confirm', label: 'Введите "да" для подтверждения', type: 'text', placeholder: 'да' }
+                ]);
+                if (result && result.confirm.trim().toLowerCase() === 'да') {
+                    const deck = getDeck(currentDeckId);
+                    deck.cards = deck.cards.filter(c => c.id !== parseInt(btn.dataset.cardId));
+                    saveData();
+                    openDeck(currentDeckId);
+                }
             });
         });
         document.querySelectorAll('.edit-card').forEach(btn => {
-            btn.addEventListener('click', e => {
+            btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const deck = getDeck(currentDeckId);
                 const card = deck.cards.find(c => c.id === parseInt(btn.dataset.cardId));
                 if (!card) return;
-                const q = prompt('Вопрос:', card.question);
-                if (q === null) return;
-                const a = prompt('Ответ:', card.answer);
-                if (a === null) return;
-                const ex = prompt('Пример:', card.example || '');
-                card.question = q.trim() || card.question;
-                card.answer = a.trim() || card.answer;
-                card.example = ex !== null ? ex.trim() : card.example;
-                saveData();
-                openDeck(currentDeckId);
+                const result = await promptModal('Редактировать карточку', 'Измените данные', [
+                    { id: 'question', label: 'Вопрос', type: 'text', value: card.question, required: true, autofocus: true },
+                    { id: 'answer', label: 'Ответ', type: 'text', value: card.answer, required: true },
+                    { id: 'example', label: 'Пример использования (опционально)', type: 'text', value: card.example || '' }
+                ]);
+                if (result) {
+                    card.question = result.question.trim() || card.question;
+                    card.answer = result.answer.trim() || card.answer;
+                    card.example = result.example.trim() || '';
+                    saveData();
+                    openDeck(currentDeckId);
+                }
             });
         });
     }
 
-    function addCard() {
+    // ============================================================
+    //  ДОБАВЛЕНИЕ КАРТОЧКИ (через модалку)
+    // ============================================================
+    async function addCard() {
         const deck = getDeck(currentDeckId);
         if (!deck) return;
-        const q = prompt('Вопрос:');
-        if (q === null || q.trim() === '') return;
-        const a = prompt('Ответ:');
-        if (a === null || a.trim() === '') return;
-        const e = prompt('Пример (опционально):') || '';
-        deck.cards.push({ id: generateId(), question: q.trim(), answer: a.trim(), example: e.trim() });
-        saveData();
-        openDeck(currentDeckId);
+        const result = await promptModal('Новая карточка', 'Заполните поля', [
+            { id: 'question', label: 'Вопрос', type: 'text', placeholder: 'Например: Apple', required: true, autofocus: true },
+            { id: 'answer', label: 'Ответ', type: 'text', placeholder: 'Например: Яблоко', required: true },
+            { id: 'example', label: 'Пример использования (опционально)', type: 'textarea', placeholder: 'Например: I eat an apple', rows: 2 }
+        ]);
+        if (result) {
+            deck.cards.push({
+                id: generateId(),
+                question: result.question.trim(),
+                answer: result.answer.trim(),
+                example: result.example.trim() || ''
+            });
+            saveData();
+            openDeck(currentDeckId);
+        }
     }
 
     // ============================================================
@@ -751,7 +1006,14 @@
     // ============================================================
     function startTest(id) {
         const deck = getDeck(id);
-        if (!deck || deck.cards.length === 0) { alert('Нет карточек!'); return; }
+        if (!deck || deck.cards.length === 0) {
+            showModal({
+                title: 'Нет карточек',
+                subtitle: 'Добавьте хотя бы одну карточку в колоду',
+                fields: []
+            }).then(() => {});
+            return;
+        }
         const shuffled = [...deck.cards].sort(() => Math.random() - 0.5);
         currentTest = {
             deckId: id,
@@ -840,14 +1102,21 @@
         document.getElementById('greetingTime').textContent = g;
         renderDecks();
 
-        document.getElementById('createDeckBtn').addEventListener('click', () => {
-            const name = prompt('Название колоды:');
-            if (name && name.trim()) {
-                decks.push({ id: generateId(), name: name.trim(), cards: [] });
+        // Создание колоды с автоматическим переходом
+        document.getElementById('createDeckBtn').addEventListener('click', async () => {
+            const result = await promptModal('Новая колода', 'Придумайте название', [
+                { id: 'name', label: 'Название колоды', type: 'text', placeholder: 'Например: Английские слова', required: true, autofocus: true }
+            ]);
+            if (result && result.name.trim()) {
+                const newDeck = { id: generateId(), name: result.name.trim(), cards: [] };
+                decks.push(newDeck);
                 saveData();
                 renderDecks();
+                // Автоматически открываем созданную колоду
+                openDeck(newDeck.id);
             }
         });
+
         document.getElementById('backToDecks').addEventListener('click', () => { showScreen('screen-decks'); renderDecks(); });
         document.getElementById('backToDeckFromTest').addEventListener('click', () => {
             if (currentTest) { const d = getDeck(currentTest.deckId); if (d) openDeck(d.id); }
@@ -862,5 +1131,6 @@
         document.getElementById('homeBtn').addEventListener('click', () => { showScreen('screen-decks'); renderDecks(); });
     });
 </script>
+
 </body>
 </html>
